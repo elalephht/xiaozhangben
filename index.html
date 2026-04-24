@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#b7d5eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="小账本">
+  <title>小账本</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./reference-cat.png">
+  <link rel="icon" href="./reference-cat.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">离线可用 · 本地存储</p>
+        <h1>小账本</h1>
+      </div>
+      <img class="brand-icon" src="./reference-cat.png" alt="小账本图标">
+    </header>
+
+    <section class="ledger-strip">
+      <div class="section-heading">
+        <h2>账本</h2>
+        <button class="ghost-button" id="open-ledger-dialog" type="button">新增</button>
+      </div>
+      <div class="chip-row" id="ledger-list"></div>
+    </section>
+
+    <section class="hero-card">
+      <div class="hero-header">
+        <div>
+          <p class="card-kicker">本月概览</p>
+          <h2 id="current-ledger-name">日常账本</h2>
+          <p class="subtle">像英短一样安静，把生活好好记下来。</p>
+        </div>
+        <span class="cat-mark">ฅ^•ﻌ•^ฅ</span>
+      </div>
+
+      <div class="stats-grid">
+        <article class="stat-block expense">
+          <p>支出</p>
+          <strong id="month-expense">¥0.00</strong>
+        </article>
+        <article class="stat-block income">
+          <p>收入</p>
+          <strong id="month-income">¥0.00</strong>
+        </article>
+      </div>
+
+      <div class="budget-wrap">
+        <div class="budget-line">
+          <span>月预算</span>
+          <strong id="budget-total">¥0.00</strong>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="budget-fill"></div>
+        </div>
+        <p class="budget-caption" id="budget-caption">还没有设置预算</p>
+      </div>
+    </section>
+
+    <section class="quick-grid">
+      <button class="quick-card" id="open-transaction-dialog" type="button">
+        <span class="quick-icon">＋</span>
+        <strong>新增记账</strong>
+        <p>收入支出都可以快速记录</p>
+      </button>
+      <button class="quick-card" id="open-budget-dialog" type="button">
+        <span class="quick-icon">◔</span>
+        <strong>设置预算</strong>
+        <p>给当前账本定一个本月上限</p>
+      </button>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <h2>最近记录</h2>
+        <button class="ghost-button" id="toggle-insights" type="button">统计</button>
+      </div>
+      <div class="transaction-list" id="transaction-list"></div>
+    </section>
+
+    <section class="panel hidden" id="insights-panel">
+      <div class="section-heading">
+        <h2>分类支出</h2>
+      </div>
+      <div id="insights-list" class="insights-list"></div>
+    </section>
+
+    <button class="floating-add" id="open-transaction-fab" type="button">＋ 记一笔</button>
+  </div>
+
+  <dialog class="app-dialog" id="transaction-dialog">
+    <form method="dialog" class="dialog-card" id="transaction-form">
+      <div class="dialog-header">
+        <h3>新增记账</h3>
+        <button class="icon-close" value="cancel" type="submit">×</button>
+      </div>
+
+      <label class="field">
+        <span>类型</span>
+        <div class="segmented">
+          <label><input type="radio" name="kind" value="expense" checked> <span>支出</span></label>
+          <label><input type="radio" name="kind" value="income"> <span>收入</span></label>
+        </div>
+      </label>
+
+      <label class="field">
+        <span>金额</span>
+        <input name="amount" type="number" step="0.01" inputmode="decimal" placeholder="例如 26.50" required>
+      </label>
+
+      <label class="field">
+        <span>分类</span>
+        <select name="categoryId" id="category-select" required></select>
+      </label>
+
+      <label class="field">
+        <span>支付方式</span>
+        <select name="paymentMethod">
+          <option value="cash">现金</option>
+          <option value="bankCard">银行卡</option>
+          <option value="alipay">支付宝</option>
+          <option value="wechat" selected>微信</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>日期</span>
+        <input name="date" type="date" required>
+      </label>
+
+      <label class="field">
+        <span>备注</span>
+        <textarea name="note" rows="2" placeholder="比如：早餐和咖啡"></textarea>
+      </label>
+
+      <button class="primary-button" type="submit">保存这笔账</button>
+    </form>
+  </dialog>
+
+  <dialog class="app-dialog" id="ledger-dialog">
+    <form method="dialog" class="dialog-card" id="ledger-form">
+      <div class="dialog-header">
+        <h3>新增账本</h3>
+        <button class="icon-close" value="cancel" type="submit">×</button>
+      </div>
+
+      <label class="field">
+        <span>账本名称</span>
+        <input name="name" type="text" maxlength="18" placeholder="例如：旅行账本" required>
+      </label>
+
+      <label class="field">
+        <span>主题色</span>
+        <select name="color">
+          <option value="#8fbceb">雾蓝</option>
+          <option value="#b7d8c7">鼠尾草绿</option>
+          <option value="#f0c7bf">奶杏粉</option>
+          <option value="#c7d4ee">柔雾紫灰</option>
+        </select>
+      </label>
+
+      <button class="primary-button" type="submit">创建账本</button>
+    </form>
+  </dialog>
+
+  <dialog class="app-dialog" id="budget-dialog">
+    <form method="dialog" class="dialog-card" id="budget-form">
+      <div class="dialog-header">
+        <h3>设置预算</h3>
+        <button class="icon-close" value="cancel" type="submit">×</button>
+      </div>
+
+      <label class="field">
+        <span>本月预算</span>
+        <input name="amount" type="number" step="0.01" inputmode="decimal" placeholder="例如 3000" required>
+      </label>
+
+      <button class="primary-button" type="submit">保存预算</button>
+    </form>
+  </dialog>
+
+  <template id="transaction-item-template">
+    <article class="transaction-item">
+      <div class="transaction-badge"></div>
+      <div class="transaction-copy">
+        <strong class="transaction-title"></strong>
+        <p class="transaction-note"></p>
+      </div>
+      <div class="transaction-meta">
+        <strong class="transaction-amount"></strong>
+        <span class="transaction-date"></span>
+      </div>
+    </article>
+  </template>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>
